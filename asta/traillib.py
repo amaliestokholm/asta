@@ -243,7 +243,8 @@ class Trail:
             basename = f"case{thecase.casename}_part{i+1}"
             asciifile = f"{self.xmlinput_dir}/{basename}.dat"
             mkdir_if_not_exists(self.xmlinput_dir)
-            outputpath = self.results_dir
+            mkdir_if_not_exists(self.results_dir)
+            outputpath = os.path.join(self.results_dir, f"case{thecase.casename}/")
             mkdir_if_not_exists(outputpath)
             delimiter = ","
             tab.write(asciifile, format="ascii.commented_header", delimiter=delimiter)
@@ -285,7 +286,7 @@ class Trail:
             base = f"mainresults/case{thecase.casename}"
             mkdir_if_not_exists("mainresults")
             merge_results_together(
-                inputs=sorted(glob.glob(f"results/*/case{thecase.casename}*.ascii")),
+                inputs=sorted(glob.glob(f"results/*/*/case{thecase.casename}*.ascii")),
                 outputs=[f"{base}.ascii", f"{base}.fits"],
                 verbose=verbose,
             )
