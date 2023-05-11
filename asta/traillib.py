@@ -172,7 +172,7 @@ class Trail:
         grid = self.grid
         assert grid is not None
 
-        oldresults = sorted(glob.glob(f"results/*/case{thecase.casename}/case{thecase.casename}*.ascii"))
+        oldresults = sorted(glob.glob(f"results/*/*/case{thecase.casename}*.ascii"))
         donestars: list[str] = []
         for oldresultfile in oldresults:
             if os.stat(oldresultfile).st_size == 0:
@@ -208,6 +208,7 @@ class Trail:
             inp[len(inp) * i // nparts : len(inp) * (i + 1) // nparts]
             for i in range(nparts)
         ]
+        assert sum(len(t) for t in tables) == len(inp)
 
         reverse_inputcols: dict[str, str] = {}
         for bastacol, inputcol in thecase.inputparams.items():
