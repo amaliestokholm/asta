@@ -172,7 +172,7 @@ class Trail:
         grid = self.grid
         assert grid is not None
 
-        oldresults = sorted(glob.glob(f"results/*/case{thecase.casename}*.ascii"))
+        oldresults = sorted(glob.glob(f"results/*/case{thecase.casename}/case{thecase.casename}*.ascii"))
         donestars: list[str] = []
         for oldresultfile in oldresults:
             if os.stat(oldresultfile).st_size == 0:
