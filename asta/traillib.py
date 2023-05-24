@@ -286,7 +286,7 @@ class Trail:
         for thecase in self.cases:
             base = f"mainresults/case{thecase.casename}/case{thecase.casename}"
             mkdir_if_not_exists("mainresults")
-            mkdir_if_not_exists("mainresults/case{thecase.casename}")
+            mkdir_if_not_exists(f"mainresults/case{thecase.casename}")
             merge_results_together(
                 inputs=sorted(glob.glob(f"results/*/*/case{thecase.casename}*.ascii")),
                 outputs=[f"{base}.ascii", f"{base}.fits"],
