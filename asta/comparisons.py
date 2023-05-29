@@ -34,6 +34,7 @@ def get_dicts():
         "numax": "numax",
         "age": "age",
         "FeH": "feh",
+        "MeH": "meh",
         "LPhot": "LPhot",
         "radPhot": "radphot",
         "d02fit": "d02fit",
@@ -45,6 +46,7 @@ def get_dicts():
         "massfin": "$M$\n(M$_{\\odot}$)",
         "radPhot": "$R$\n(R$_{\\odot}$)",
         "FeH": "[Fe/H]\n(dex)",
+        "MeH": "[M/H]\n(dex)",
         "Teff": "$T_{\\mathrm{eff}}$\n(K)",
         "age": "Age\n(Gyr)",
         "Rbcz": "R$_\\mathrm{bcz}$\n(r/R$_\\mathrm{phot}$)",
@@ -157,8 +159,7 @@ def compare_different_runs(
 
     paramsdict, prettypar = get_dicts()
     colors, tableau10 = get_colors()
-    inp = Table.read(inptable, format="ascii.commented_header", delimiter=',')
-    print(inp.columns)
+    inp = Table.read(inptable, format="ascii.commented_header")
 
     labels = get_name(bastaoutdirs)
 
@@ -186,13 +187,14 @@ def compare_different_runs(
                     axs[0].set_yticklabels(bastaoutdirs, fontsize="small")
 
                 for p, par in enumerate(parameter_for_comparison):
+                    obs = None
+                    obs_err = None
                     if inpparamdict is not None:
-                        inppar = inpparamdict[par]
-                        if inppar in inp.columns:
-                            obs = inp[inppar][i]
-                            obs_err = inp[inpparamdict[par + '_e']][i]
-                        else:
-                            obs = None
+                        if par in inpparamdict.keys():
+                            inppar = inpparamdict[par]
+                            if inppar in inp.columns:
+                                obs = inp[inppar][i]
+                                obs_err = inp[inpparamdict[par + '_e']][i]
                     else:
                         inppar = paramsdict[par]
                         if inppar in inp.columns:
@@ -201,8 +203,6 @@ def compare_different_runs(
                                 obs_err = inp[inppar + "_e"][i]
                             else:
                                 obs_err = inp[inppar + "_err"][i]
-                        else:
-                            obs = None
 
                     if not obs is None:
                         axs[p].axvline(x=obs, c=obsc, alpha=0.7, zorder=0)
