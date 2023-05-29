@@ -146,6 +146,7 @@ def compare_different_runs(
     prior=None,
     includeprior=True,
     plotdir='.',
+    inpparamdict=None,
 ):
     if style is None:
         prettifys = [True, False]
@@ -157,6 +158,7 @@ def compare_different_runs(
     paramsdict, prettypar = get_dicts()
     colors, tableau10 = get_colors()
     inp = Table.read(inptable, format="ascii.commented_header", delimiter=',')
+    print(inp.columns)
 
     labels = get_name(bastaoutdirs)
 
@@ -184,16 +186,23 @@ def compare_different_runs(
                     axs[0].set_yticklabels(bastaoutdirs, fontsize="small")
 
                 for p, par in enumerate(parameter_for_comparison):
-                    inppar = paramsdict[par]
-                    if inppar in inp.columns:
-                        obs = inp[inppar][i]
-                        if inppar + "_e" in inp.columns:
-                            obs_err = inp[inppar + "_e"][i]
+                    if inpparamdict is not None:
+                        inppar = inpparamdict[par]
+                        if inppar in inp.columns:
+                            obs = inp[inppar][i]
+                            obs_err = inp[inpparamdict[par + '_e']][i]
                         else:
-                            obs_err = inp[inppar + "_err"][i]
-
+                            obs = None
                     else:
-                        obs = None
+                        inppar = paramsdict[par]
+                        if inppar in inp.columns:
+                            obs = inp[inppar][i]
+                            if inppar + "_e" in inp.columns:
+                                obs_err = inp[inppar + "_e"][i]
+                            else:
+                                obs_err = inp[inppar + "_err"][i]
+                        else:
+                            obs = None
 
                     if not obs is None:
                         axs[p].axvline(x=obs, c=obsc, alpha=0.7, zorder=0)
