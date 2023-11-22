@@ -3,202 +3,238 @@ import h5py
 import numpy as np
 
 # Settings (maybe parsing?)
-grid = '/home/ADF/stokhoal/BASTA/grids/Garstec_16CygA.hdf5'
+grid = "/home/ADF/stokhoal/BASTA/grids/Garstec_16CygA.hdf5"
+outdir = "./gridtext/"
+if not os.path.exists(outdir):
+    os.path.makedirs(outdir)
+filename = os.path.join(outdir, f"griddescription_{grid.split('/')[-1][:-5]}.txt")
+bibname = os.path.join(outdir, f"bib_{grid.split('/')[-1][:-5]}.bib")
+sobol = True
+mindnu = None
+maxdnu = None
+parallax = True
+imfprior = True
+universeageprior = False
 
 assert os.path.exists(grid)
 
 a = h5py.File(grid)
-nooftracks = np.ceil(len(a['header/tracks']) / 100) * 100  # round up to nearest 100
-
-# Dimensions
-alphaMLT = sorted(np.unique(list(a['header/alphaMLT'])))
-alphaMLT = [round(alphaMLT[0], 2), round(alphaMLT[-1], 2)]
-
+nooftracks = np.ceil(len(a["header/tracks"]) / 100) * 100  # round up to nearest 100
 
 
 # Preamble
-preamble = ''
-if garstec:
+preamble = r"""
+\usepackage{siunitx}    % Typesetting of numbers and/or units
+\usepackage{xspace}     % Appropriate space for commans
+\DeclareSIUnit{\solarmass}{\ensuremath{M_\odot}\xspace}
+
+\newcommand{\basta}{\textsc{basta}\xspace}
+"""
+if "Garstec" in grid:
     preamble += r"\newcommand{\Garstec}{\textsc{Garstec}\xspace}"
-if adipls:
-    preamble += r"\newcommand{\adipls}{\textsc{ADIPLS}\xspace}"
-preamble += r"\newcommand{\range}[2]{\ensuremath{\ni ] #1;#2 [}\xspace}"
+    preamble += r"\newcommand{\adipls}{\textsc{adipls}\xspace}"
+preamble += r"""
+\newcommand{\dnu}{\ensuremath{\Delta\nu}\xspace}
+\newcommand{\numax}{\ensuremath{\nu_\textup{max}}\xspace}
+\newcommand{\feh}{\ensuremath{[\textup{Fe}/\textup{H}]}\xspace}
+\newcommand{\meh}{\ensuremath{[\textup{M}/\textup{H}]}\xspace}
+\newcommand{\teff}{\ensuremath{\var{T}{eff}}\xspace}
+\newcommand{\logg}{\ensuremath{\log g}\xspace}
+\newcommand{\lphot}{\ensuremath{\var{L}{Phot}}\xspace}
+"""
 
 # Paragraph
-paragraph = f" We determine the stellar properties using grid-based stellar modelling."
+paragraph = r"We determine the stellar properties using grid-based stellar modelling. "
 paragraph += "We construct grids of theoretical models of stellar evolution covering the necessary parameter space, which we compare the observed parameters to the predicted theoretical quantities. Quantities like stellar age can thus be inferred from the constraints given by the other observables."
 
 
 # Sampling
-text = ''
-text += f'We build a grid with ${\sim}{nooftracks}$ evolutionary tracks of stellar models'
+text = (
+    f"We build a grid with $\sim{nooftracks}$ evolutionary tracks of stellar models. "
+)
 if sobol:
-    text += f"We sampled the parameter space by utilising the Sobol quasi-random, low-discrepancy sequences to uniformly populate the parameter space \citep{sobol1,sobol2,sobol6,sobol4,sobol5,sobol3}."
+    text += r"We sampled the parameter space by utilising the Sobol quasi-random, low-discrepancy sequences to uniformly populate the parameter space \citep{sobol1,sobol2,sobol6,sobol4,sobol5,sobol3}. "
 
 # Stellar evolution code
-if garstec:
-    text += f"Grids of stellar models were computed with the Garching Stellar Evolution Code \citep[\Garstec][]{weiss2008}."
+if "Garstec" in grid:
+    text += r"Grids of stellar models were computed with the Garching Stellar Evolution Code \citep[\Garstec][]{weiss2008}. "
 else:
-    raise ValueError, 'What is your stellar evolution code?'
+    raise ValueError("What is your stellar evolution code?")
 
 
 # EOS
-text += r"The code utilises a combination of the equation of state by the \textsc{OPAL} group \citep{rogers1996,rogers2002}, and the Mihalas-Hummer-Däppen equation of state \citep{mihalas1988,hummer1988,daeppen1988,mihalas1990}."
+text += r"The code utilises a combination of the equation of state by the \textsc{OPAL} group \citep{rogers1996,rogers2002}, and the Mihalas-Hummer-Däppen equation of state \citep{mihalas1988,hummer1988,daeppen1988,mihalas1990}. "
 
 # Opacities
-text += "We use the OPAL opacities \citep{rogers1992,iglesias1996} at high temperatures supplemented by the opacities of \citet{ferguson2005} at low temperatures."
-text += r"\Garstec uses the NACRE nuclear reaction rates \citep{angulo1999} except for $^{14}$N($p,\gamma$)$^{15}$O and $^{12}$C($\alpha,\gamma$)$^{16}$O for which the rates from \citet{formicola2004} and \citet{hammer2005} were used."
+text += "We use the OPAL opacities \citep{rogers1992,iglesias1996} at high temperatures supplemented by the opacities of \citet{ferguson2005} at low temperatures. "
+text += r"\Garstec uses the NACRE nuclear reaction rates \citep{angulo1999} except for $^{14}$N($p,\gamma$)$^{15}$O and $^{12}$C($\alpha,\gamma$)$^{16}$O for which the rates from \citet{formicola2004} and \citet{hammer2005} were used. "
 
 # Solar mixture and opacities
-if GV98:
-    text += f'The stellar models are computed using the \citet{grevesse1998} solar mixture'
-elif ASP09:
-    text += f'The stellar models are computed using the \citet{asplund2009} solar mixture'
+if "_gv98_" in list(a["solar_models"])[0]:
+    text += r"The stellar models are computed using the \citet{grevesse1998} solar mixture. "
+elif "_as09_" in list(a["solar_models"])[0]:
+    text += (
+        r"The stellar models are computed using the \citet{asplund2009} solar mixture. "
+    )
 else:
-    raise ValueError, 'What is your solar mixture?'
+    raise ValueError("What is your solar mixture?")
+
+text += "\n"
 
 # Convection
-text += f"Convection in the models are parameterised using mixing-length theory \citep{bohm1958, kippenhahn2012},"
-if convection:
-    text += f"where the mixing length parameter is allowed to vary in the range {alphaMLT[0]}--{alphaMLT[1]}."
-else: 
-    if len(np.unique(alphaMLT)) == 1:
-       text += f"where the mixing length parameter is kept constant at the solar-calibrated value of $\amlt={alphaMLT[0]}$ as determined by a standard solar model calibration."
+text += r"Convection in the models are parameterised using mixing-length theory \citep{bohm1958, kippenhahn2012},"
+alphaMLT = sorted(np.unique(list(a["header/alphaMLT"])))
+alphaMLT = [round(alphaMLT[0], 2), round(alphaMLT[-1], 2)]
+if len(np.unique(alphaMLT)) > 1:
+    text += f"where the mixing length parameter is allowed to vary in the range {alphaMLT[0]}--{alphaMLT[1]}. "
+else:
+    text += r"where the mixing length parameter is kept constant at the solar-calibrated value of $\amlt="
+    text += f"{alphaMLT[0]}$ as determined by a standard solar model calibration. "
 
 # ODEA
-if normal:
-    text += "Diffusion and settling of helium and heavier elements were not included, neither was convective overshooting."
+if {"dif", "ove"} <= set(a["header/pars_constant"]):
+    text += "Diffusion and settling of helium and heavier elements were not included, neither was convective overshooting. "
 
-assert normal or (dif or ove or massloss or alphaFe)
-if massloss:
-    text += f"The mass loss ($\eta$) ranges from $0.0$ to $0.3$ following the \citet{reimers1977} formalism."
-if dif:
-    text += r"Atomic diffusion of elements are treated following the prescription by \cite{thoul1994}."
-if ove:
-    text += r"We allowed the convective overshooting to vary by varying the overshooting efficiency $f_{\rm ove}$ in the range "
-if chemevo:
-    text = r'The primordial helium is assumed to be 0.248 \citep{fields2020} and we use a fixed the Galactic chemical enrichment law of $\Delta Y/\Delta Z=1.4$ \citep{balser2006}.'
-if alphaFe:
-    text += r'The $\alpha$-enhancement ranged from'.
-
+text = r"The primordial helium is assumed to be $0.248$ \citep{fields2020} and we use a fixed the Galactic chemical enrichment law of $\Delta Y/\Delta Z=1.4$ \citep{balser2006}. "
 
 # Atmosphere
-text += "We used an Eddington grey atmosphere."
+text += "We used an Eddington grey atmosphere. "
 
 # Dimensions
 params = {
-        'massini': ['masses', '\si{\solarmass}'],
-        'FeHini': ['initial iron abundances', 'dex'],
-        'MeHini': ['initial metallicity', 'dex'],
-        'alphaMLT': ['mixing-length parameter', ''],
-        'yini': ['initial helium fraction', ''],
-        'alphaFe': ['alpha enhancement', ''],
-        'dif': [],
-        'eta': ['mass loss efficiency', ''],
-        'ove': ['overshooting efficiency', ''],
-            }
-text += f'The stellar grid samples '
-for i, param in enumerate(list(a['header/pars_sampled'])):
-    paramlist = sorted(np.unique(list(a[f'header/{param}'])))
+    "massini": ["masses", "\si{\solarmass}"],
+    "FeHini": ["initial iron abundances", "dex"],
+    "MeHini": ["initial metallicity", "dex"],
+    "alphaMLT": ["mixing-length parameter", ""],
+    "yini": ["initial helium fraction", ""],
+    "alphaFe": [r"$\alpha$ enhancement", ""],
+    "dif": [],
+    "eta": ["mass loss efficiency", " following the \citet{reimers1977} formalism."],
+    "ove": ["overshooting efficiency", ""],
+}
+text += f"The stellar grid samples "
+for i, param in enumerate(list(a["header/pars_sampled"])):
+    param = param.astype(str)
+    if param == "dif":
+        text += r"Atomic diffusion of elements are treated following the prescription by \cite{thoul1994}."
+        continue
+    paramlist = sorted(np.unique(list(a[f"header/{param}"])))
     paramlist = [round(paramlist[0], 3), round(paramlist[-1], 3)]
-    text += f'{params[param][0] from paramlist[0]--paramlist[1]~params[param][1]'
-    if i == len(list(a['header/pars_sampled'])):
-        text += '. '
+    text += (
+        f"{params[param][0]} from ${paramlist[0]}$--${paramlist[1]}$~{params[param][1]}"
+    )
+    if i == len(list(a["header/pars_sampled"])):
+        text += ". "
     else:
-        text += ', '
+        text += ", "
 
-for param in 
 # Dnu range
-if dnucoverage:
-    text += f'The grid covers \dnu in the range $50$--$60$~\si{\micro\hertz}.'
-else:
-    text += f'The range of models in a given track is limited between the zero-age main-sequence and when the model reaches a large frequency separation of $\Delta\nu = \SI{170}{\micro\hertz}$. Here, the zero-age main-sequence is determined as where the ratio between the hydrogen burning luminosity and the total luminosity reaches $1$.' 
+if mindnu is not None:
+    text += f"The grid covers \dnu in the range ${mindnu}$--${maxdnu}$"
+    text += r"~\si{\micro\hertz}. "
+elif maxdnu is not None:
+    text += r"The range of models in a given track is limited between the zero-age main-sequence and when the model reaches a large frequency separation of $\dnu = {maxdnu}~\si{\micro\hertz}$. Here, the zero-age main-sequence is determined as where the ratio between the hydrogen burning luminosity and the total luminosity reaches $1$. "
 
 # Individual frequencies
-if adipls:
-    text += r'The theoretical oscillation frequencies of the models are computed using the Aarhus adiabatic oscillation package \adipls \citep[][]{jcd2008}.'
+if "Garstec" in grid:
+    text += r"The theoretical oscillation frequencies of the models are computed using the Aarhus adiabatic oscillation package \citep[\adipls;][]{jcd2008}. "
 
 if parallax:
-    text += r'For the computation of synthetic magnitudes, we use the bolometric corrections of \citet{hidalgo2018} and we use the dust map from \citet{green2019} for computing the extinction.'
+    text += r"For the computation of synthetic magnitudes, we use the bolometric corrections of \citet{hidalgo2018} and we use the dust map from \citet{green2019} for computing the extinction. "
+
+text += "\n"
 
 # BASTA
-text += r'We use the BAyesian STellar Algorithm \citep[\basta;][]{silvaaguirre2015,silvaaguirre2017,aguirreborsenkoch2022} to determine the stellar parameters. Given a precomputed grid of stellar models, \basta uses a Bayesian approach to compute the posterior distribution of a given stellar parameter using a set of observational constraints. '
+text += r"We use the BAyesian STellar Algorithm \citep[\basta;][]{silvaaguirre2015,silvaaguirre2017,aguirreborsenkoch2022} to determine the stellar parameters. Given a precomputed grid of stellar models, \basta uses a Bayesian approach to compute the posterior distribution of a given stellar parameter using a set of observational constraints. "
 
 if imfprior:
-    text += r'\basta allows for prior probability distributions to be taken into account when computing the posterior distributions. We used the Salpeter initial mass function \citep{salpeter1955} to quantify the expected mass distribution of stars favouring low-mass stars as the most abundant.'
+    text += r"\basta allows for prior probability distributions to be taken into account when computing the posterior distributions. We used the Salpeter initial mass function \citep{salpeter1955} to quantify the expected mass distribution of stars favouring low-mass stars as the most abundant. "
 
 if universeageprior:  # This is directly from Borre et al. 2021
-    text += r'Additionally, we include an upper limit on the stellar ages of 15 Gyr. This is done to avoid nonphysical solutions for stars older than the age of the Universe. Despite the solutions not being physical at above the age of the Universe (13.7 Gyr), they can still hold statistical significance and we do, therefore, not truncate the solutions at 13.7 Gyr but allow them to stretch to 15 Gyr. For the remaining parameters we use uniform priors.'
+    text += r"Additionally, we include an upper limit on the stellar ages of 15 Gyr. This is done to avoid nonphysical solutions for stars older than the age of the Universe. Despite the solutions not being physical at above the age of the Universe (13.7 Gyr), they can still hold statistical significance and we do, therefore, not truncate the solutions at 13.7 Gyr but allow them to stretch to 15 Gyr. For the remaining parameters we use uniform priors. "
 
 
 # Bibliography
-bib = ''
+bib = ""
 if sobol:
     bib += """
-    @ARTICLE{sobol1,
-        author = {{Sobol}, Ilya and {Levithan}, Y.L.},
-        title = "{The Production of Points Uniformly Distributed in a Multidimensional Cube (in Russian)}",
-        journal = {IPM Akademii Nauk SSSR},
-        number = {40},
-        year = {1976}
-    }
+@ARTICLE{sobol1,
+    author = {{Sobol}, Ilya and {Levithan}, Y.L.},
+    title = "{The Production of Points Uniformly Distributed in a Multidimensional Cube (in Russian)}",
+    journal = {IPM Akademii Nauk SSSR},
+    number = {40},
+    year = {1976}
+}
 
-    @ARTICLE{sobol2,
-        author = {{Sobol}, Ilya},
-        title = "{Uniformly Distributed Sequences with an Additional Uniform Property}",
-        journal = {USSR Computational Mathematics and Mathematical Physics},
-        volume = {16},
-        year = {1977},
-        pages = {236-242}
-    }
+@ARTICLE{sobol2,
+    author = {{Sobol}, Ilya},
+    title = "{Uniformly Distributed Sequences with an Additional Uniform Property}",
+    journal = {USSR Computational Mathematics and Mathematical Physics},
+    volume = {16},
+    year = {1977},
+    pages = {236-242}
+}
 
-    @ARTICLE{sobol3,
-        author = {{Joe}, Stephen and {Kuo}, Frances},
-        title = "{Remark on Algorithm 659: Implementing Sobol's Quasirandom Sequence Generator}",
-        journal = {ACM Transactions on Mathematical Software},
-        number = {1},
-        volume = {29},
-        year = {2003},
-        month = {3},
-        pages = {49-57}
-    }
+@ARTICLE{sobol3,
+    author = {{Joe}, Stephen and {Kuo}, Frances},
+    title = "{Remark on Algorithm 659: Implementing Sobol's Quasirandom Sequence Generator}",
+    journal = {ACM Transactions on Mathematical Software},
+    number = {1},
+    volume = {29},
+    year = {2003},
+    month = {3},
+    pages = {49-57}
+}
 
-    @ARTICLE{sobol4,
-        author = {{Fox}, Bennett},
-        title = "{Algorithm 647: Implementation and Relative Efficiency of Quasirandom Sequence Generators}",
-        journal = {ACM Transactions on Mathematical Software},
-        number = {4},
-        volume = {12},
-        year = {1986},
-        month = {12},
-        pages = {362-376}
-    }
+@ARTICLE{sobol4,
+    author = {{Fox}, Bennett},
+    title = "{Algorithm 647: Implementation and Relative Efficiency of Quasirandom Sequence Generators}",
+    journal = {ACM Transactions on Mathematical Software},
+    number = {4},
+    volume = {12},
+    year = {1986},
+    month = {12},
+    pages = {362-376}
+}
 
-    @ARTICLE{sobol5,
-        author = {{Bratley}, Paul and {Fox}, Bennett},
-        title = "{Algorithm 659: Implementing Sobol's Quasirandom Sequence Generator}",
-        journal = {ACM Transactions on Mathematical Software},
-        number = {1},
-        volume = {14},
-        year = {1988},
-        month = {3},
-        pages = {88-100}
-    }
+@ARTICLE{sobol5,
+    author = {{Bratley}, Paul and {Fox}, Bennett},
+    title = "{Algorithm 659: Implementing Sobol's Quasirandom Sequence Generator}",
+    journal = {ACM Transactions on Mathematical Software},
+    number = {1},
+    volume = {14},
+    year = {1988},
+    month = {3},
+    pages = {88-100}
+}
 
-    @ARTICLE{sobol6,
-        author = {{Antonov}, I.A. and {Saleev}, V.M.},
-        title = "{An Economic Method of Computing LP Tau-Sequences}",
-        journal = {USSR Computational Mathematics and Mathematical Physics},
-        volume = {19},
-        year = {1980},
-        pages = {252-256}
-    }
+@ARTICLE{sobol6,
+    author = {{Antonov}, I.A. and {Saleev}, V.M.},
+    title = "{An Economic Method of Computing LP Tau-Sequences}",
+    journal = {USSR Computational Mathematics and Mathematical Physics},
+    volume = {19},
+    year = {1980},
+    pages = {252-256}
+}
 """
 
-if GV98:
-    bib += """
-    """
-elif ASP09:
+if "_gv98_" in list(a["solar_models"])[0]:
+    bib += r"""
+@article{grevesse1998,
+    author = {{Grevesse}, N. and {Sauval}, A.~J.},
+    title = "{Standard Solar Composition}",
+    journal = {\ssr},
+    keywords = {Sun: abundances, Meteorites: abundances, Solar spectroscopy},
+    year = 1998,
+    month = may,
+    volume = 85,
+    pages = {161-174},
+    doi = {10.1023/A:1005161325181},
+    adsurl = {http://adsabs.harvard.edu/abs/1998SSRv...85..161G},
+    adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+        """
+elif "_as09_" in list(a["solar_models"])[0]:
     bib += r"""
     @ARTICLE{asplund2009,
        author = {{Asplund}, Martin and {Grevesse}, Nicolas and {Sauval}, A. Jacques and {Scott}, Pat},
@@ -218,7 +254,7 @@ archivePrefix = {arXiv},
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
     """
 
-if garstec:
+if "Garstec" in grid:
     bib += r"""
     @article{weiss2008,
       author = {{Weiss}, A. and {Schlattl}, H.},
@@ -646,28 +682,69 @@ archivePrefix = {arXiv},
 
 """
 if imfprior:
-    bib += """
-    @ARTICLE{salpeter1955,
-           author = {{Salpeter}, Edwin E.},
-            title = "{The Luminosity Function and Stellar Evolution.}",
-          journal = {\apj},
-             year = 1955,
-            month = jan,
-           volume = {121},
-            pages = {161},
-              doi = {10.1086/145971},
-           adsurl = {https://ui.adsabs.harvard.edu/abs/1955ApJ...121..161S},
-          adsnote = {Provided by the SAO/NASA Astrophysics Data System}
-    }
+    bib += r"""
+@ARTICLE{salpeter1955,
+       author = {{Salpeter}, Edwin E.},
+        title = "{The Luminosity Function and Stellar Evolution.}",
+      journal = {\apj},
+         year = 1955,
+        month = jan,
+       volume = {121},
+        pages = {161},
+          doi = {10.1086/145971},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/1955ApJ...121..161S},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+"""
+bib += r"""
+@ARTICLE{balser2006,
+   author = {{Balser}, D.~S.},
+    title = "{The Chemical Evolution of Helium}",
+  journal = {\aj},
+   eprint = {astro-ph/0608436},
+ keywords = {ISM: H II Regions, ISM: Abundances, Radio Lines: ISM},
+     year = 2006,
+    month = dec,
+   volume = 132,
+    pages = {2326-2332},
+      doi = {10.1086/508515},
+   adsurl = {http://adsabs.harvard.edu/abs/2006AJ....132.2326B},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+"""
+bib += r"""
+@ARTICLE{fields2020,
+       author = {{Fields}, Brian D. and {Olive}, Keith A. and {Yeh}, Tsung-Han and {Young}, Charles},
+        title = "{Big-Bang Nucleosynthesis after Planck}",
+      journal = {\jcap},
+     keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics, High Energy Physics - Phenomenology, Nuclear Experiment},
+         year = 2020,
+        month = mar,
+       volume = {2020},
+       number = {3},
+          eid = {010},
+        pages = {010},
+          doi = {10.1088/1475-7516/2020/03/010},
+archivePrefix = {arXiv},
+       eprint = {1912.01132},
+ primaryClass = {astro-ph.CO},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2020JCAP...03..010F},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
 """
 
-print('WARNING: DO NOT USE THIS TEXT FOR PAPERS ETC AS IT IS BASICALLY COPY-PASTE')
-print('PLEASE DOUBLE-CHECK IF THE TEXT MATCHES YOUR EXPECTATIONS')
-print('TO BE USED FOR EASILY COMMUNICATING A SET-UP PRE-PUBLICATION')
-print(preamble)
-print('')
-print(paragraph)
-print(text)
-print('')
-print('')
-print(bib)
+with open(filename, "w") as outfile:
+    outfile.write(
+        "WARNING: DO NOT USE THIS TEXT FOR PAPERS ETC AS IT IS BASICALLY COPY-PASTE"
+    )
+    outfile.write("PLEASE DOUBLE-CHECK IF THE TEXT MATCHES YOUR EXPECTATIONS")
+    outfile.write("TO BE USED FOR EASILY COMMUNICATING A SET-UP PRE-PUBLICATION")
+    outfile.write(preamble)
+    outfile.write("")
+    outfile.write(paragraph)
+    outfile.write(text)
+    outfile.write("")
+    outfile.write("")
+
+with open(bibname, "w") as bibfile:
+    bibfile.write(bib)
