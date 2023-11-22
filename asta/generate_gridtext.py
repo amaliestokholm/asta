@@ -8,12 +8,12 @@ grid = '/home/ADF/stokhoal/BASTA/grids/Garstec_16CygA.hdf5'
 assert os.path.exists(grid)
 
 a = h5py.File(grid)
-
 nooftracks = np.ceil(len(a['header/tracks']) / 100) * 100  # round up to nearest 100
 
 # Dimensions
 alphaMLT = sorted(np.unique(list(a['header/alphaMLT'])))
 alphaMLT = [round(alphaMLT[0], 2), round(alphaMLT[-1], 2)]
+
 
 
 # Preamble
@@ -60,7 +60,7 @@ else:
 # Convection
 text += f"Convection in the models are parameterised using mixing-length theory \citep{bohm1958, kippenhahn2012},"
 if convection:
-    text += f"where the mixing length parameter is allowed to vary in the range \range[{alphaMLT[0]}][{alphaMLT[1]}]."
+    text += f"where the mixing length parameter is allowed to vary in the range {alphaMLT[0]}--{alphaMLT[1]}."
 else: 
     if len(np.unique(alphaMLT)) == 1:
        text += f"where the mixing length parameter is kept constant at the solar-calibrated value of $\amlt={alphaMLT[0]}$ as determined by a standard solar model calibration."
@@ -75,41 +75,60 @@ if massloss:
 if dif:
     text += r"Atomic diffusion of elements are treated following the prescription by \cite{thoul1994}."
 if ove:
-
-if alphaFe:
-    text += r''
-
+    text += r"We allowed the convective overshooting to vary by varying the overshooting efficiency $f_{\rm ove}$ in the range "
 if chemevo:
-    text = r'The primordial helium is assumed to be 0.248 \citep{fields2020} and the Galactic chemical enrichment law is assumed to be $\Delta Y/\Delta Z=1.4$.'
+    text = r'The primordial helium is assumed to be 0.248 \citep{fields2020} and we use a fixed the Galactic chemical enrichment law of $\Delta Y/\Delta Z=1.4$ \citep{balser2006}.'
+if alphaFe:
+    text += r'The $\alpha$-enhancement ranged from'.
 
 
 # Atmosphere
 text += "We used an Eddington grey atmosphere."
 
 # Dimensions
-The stellar grid samples masses from $1.0$--$1.5$~\si{\solarmass} in steps of \SI{0.01}{\solarmass} and it samples metallicities from $\meh=-0.32$ to $-0.14$ in steps of $0.03$, assuming a fixed linear Galactic chemical evolution model of $\Delta Y / \Delta Z = 1.4$ \citep{balser2006}.
+params = {
+        'massini': ['masses', '\si{\solarmass}'],
+        'FeHini': ['initial iron abundances', 'dex'],
+        'MeHini': ['initial metallicity', 'dex'],
+        'alphaMLT': ['mixing-length parameter', ''],
+        'yini': ['initial helium fraction', ''],
+        'alphaFe': ['alpha enhancement', ''],
+        'dif': [],
+        'eta': ['mass loss efficiency', ''],
+        'ove': ['overshooting efficiency', ''],
+            }
+text += f'The stellar grid samples '
+for i, param in enumerate(list(a['header/pars_sampled'])):
+    paramlist = sorted(np.unique(list(a[f'header/{param}'])))
+    paramlist = [round(paramlist[0], 3), round(paramlist[-1], 3)]
+    text += f'{params[param][0] from paramlist[0]--paramlist[1]~params[param][1]'
+    if i == len(list(a['header/pars_sampled'])):
+        text += '. '
+    else:
+        text += ', '
 
+for param in 
 # Dnu range
-The grid covers \dnu in the range $50$--$60$~\si{\micro\hertz}, thus spanning the parameter space from about $\SI{5}{\micro\hertz}$ on both sides of the observed \dnu.
+if dnucoverage:
+    text += f'The grid covers \dnu in the range $50$--$60$~\si{\micro\hertz}.'
+else:
+    text += f'The range of models in a given track is limited between the zero-age main-sequence and when the model reaches a large frequency separation of $\Delta\nu = \SI{170}{\micro\hertz}$. Here, the zero-age main-sequence is determined as where the ratio between the hydrogen burning luminosity and the total luminosity reaches $1$.' 
 
 # Individual frequencies
 if adipls:
     text += r'The theoretical oscillation frequencies of the models are computed using the Aarhus adiabatic oscillation package \adipls \citep[][]{jcd2008}.'
 
 if parallax:
-    text += r'For the computation of synthetic magnitudes, we use the bolometric corrections of \citet{hidalgo2018}'
+    text += r'For the computation of synthetic magnitudes, we use the bolometric corrections of \citet{hidalgo2018} and we use the dust map from \citet{green2019} for computing the extinction.'
 
 # BASTA
-text += r'We use the BAyesian STellar Algorithm \citep[\basta;][]{aguirresilvaaguirre2015,silvaaguirre2017} to determine the stellar parameters. Given a precomputed grid of stellar models, \basta uses a Bayesian approach to compute the posterior distribution of a given stellar parameter using a set of observational constraints. '
+text += r'We use the BAyesian STellar Algorithm \citep[\basta;][]{silvaaguirre2015,silvaaguirre2017,aguirreborsenkoch2022} to determine the stellar parameters. Given a precomputed grid of stellar models, \basta uses a Bayesian approach to compute the posterior distribution of a given stellar parameter using a set of observational constraints. '
 
 if imfprior:
-    text = r'\basta allows for prior probability distributions to be taken into account when computing the posterior distributions. We used the Salpeter initial mass function \citep{salpeter1955} to quantify the expected mass distribution of stars favouring low-mass stars as the most abundant.'
+    text += r'\basta allows for prior probability distributions to be taken into account when computing the posterior distributions. We used the Salpeter initial mass function \citep{salpeter1955} to quantify the expected mass distribution of stars favouring low-mass stars as the most abundant.'
 
 if universeageprior:  # This is directly from Borre et al. 2021
     text += r'Additionally, we include an upper limit on the stellar ages of 15 Gyr. This is done to avoid nonphysical solutions for stars older than the age of the Universe. Despite the solutions not being physical at above the age of the Universe (13.7 Gyr), they can still hold statistical significance and we do, therefore, not truncate the solutions at 13.7 Gyr but allow them to stretch to 15 Gyr. For the remaining parameters we use uniform priors.'
-
-
-# Fitting
 
 
 # Bibliography
@@ -492,7 +511,156 @@ archivePrefix = {arXiv},
 	adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 
+
+@article{hidalgo2018,
+	doi = {10.3847/1538-4357/aab158},
+	url = {https://doi.org/10.3847/1538-4357/aab158},
+	year = 2018,
+	month = {mar},
+	publisher = {American Astronomical Society},
+	volume = {856},
+	number = {2},
+	pages = {125},
+	author = {Sebastian L. Hidalgo and Adriano Pietrinferni and Santi Cassisi and Maurizio Salaris and Alessio Mucciarelli and Alessandro Savino and Antonio Aparicio and Victor Silva Aguirre and Kuldeep Verma},
+	title = {The Updated {BaSTI} Stellar Evolution Models and Isochrones. I. Solar-scaled Calculations},
+	journal = {The Astrophysical Journal},
+}
+
+
+@ARTICLE{green2015,
+       author = {{Green}, Gregory M. and {Schlafly}, Edward F. and
+         {Finkbeiner}, Douglas P. and {Rix}, Hans-Walter and {Martin}, Nicolas and
+         {Burgett}, William and {Draper}, Peter W. and {Flewelling}, Heather and
+         {Hodapp}, Klaus and {Kaiser}, Nicholas and {Kudritzki}, Rolf Peter and
+         {Magnier}, Eugene and {Metcalfe}, Nigel and {Price}, Paul and
+         {Tonry}, John and {Wainscoat}, Richard},
+        title = "{A Three-dimensional Map of Milky Way Dust}",
+      journal = {\apj},
+     keywords = {dust, extinction, Galaxy: structure, methods: statistical, Astrophysics - Astrophysics of Galaxies},
+         year = 2015,
+        month = sep,
+       volume = {810},
+       number = {1},
+          eid = {25},
+        pages = {25},
+          doi = {10.1088/0004-637X/810/1/25},
+archivePrefix = {arXiv},
+       eprint = {1507.01005},
+ primaryClass = {astro-ph.GA},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2015ApJ...810...25G},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+@ARTICLE{green2019,
+       author = {{Green}, Gregory M. and {Schlafly}, Edward and {Zucker}, Catherine and
+         {Speagle}, Joshua S. and {Finkbeiner}, Douglas},
+        title = "{A 3D Dust Map Based on Gaia, Pan-STARRS 1, and 2MASS}",
+      journal = {\apj},
+     keywords = {Interstellar reddening, Interstellar dust extinction, Galaxy structure, Galaxy stellar content, Interstellar dust, 853, 837, 622, 621, 836, Astrophysics - Astrophysics of Galaxies},
+         year = 2019,
+        month = dec,
+       volume = {887},
+       number = {1},
+          eid = {93},
+        pages = {93},
+          doi = {10.3847/1538-4357/ab5362},
+archivePrefix = {arXiv},
+       eprint = {1905.02734},
+ primaryClass = {astro-ph.GA},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2019ApJ...887...93G},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
+@ARTICLE{aguirre2015,
+       author = {{Silva Aguirre}, V. and {Davies}, G.~R. and {Basu}, S. and
+         {Christensen-Dalsgaard}, J. and {Creevey}, O. and {Metcalfe}, T.~S. and
+         {Bedding}, T.~R. and {Casagrande}, L. and {Handberg}, R. and
+         {Lund}, M.~N. and {Nissen}, P.~E. and {Chaplin}, W.~J. and {Huber}, D. and
+         {Serenelli}, A.~M. and {Stello}, D. and {Van Eylen}, V. and
+         {Campante}, T.~L. and {Elsworth}, Y. and {Gilliland}, R.~L. and
+         {Hekker}, S. and {Karoff}, C. and {Kawaler}, S.~D. and {Kjeldsen}, H. and
+         {Lundkvist}, M.~S.},
+        title = "{Ages and fundamental properties of Kepler exoplanet host stars from asteroseismology}",
+      journal = {\mnras},
+     keywords = {asteroseismology, planets and satellites: fundamental parameters, stars: evolution, stars: fundamental parameters, stars: oscillations, planetary systems, Astrophysics - Solar and Stellar Astrophysics, Astrophysics - Earth and Planetary Astrophysics},
+         year = 2015,
+        month = sep,
+       volume = {452},
+       number = {2},
+        pages = {2127-2148},
+          doi = {10.1093/mnras/stv1388},
+archivePrefix = {arXiv},
+       eprint = {1504.07992},
+ primaryClass = {astro-ph.SR},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2015MNRAS.452.2127S},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
+@ARTICLE{aguirre2017,
+       author = {{Silva Aguirre}, V. and {Lund}, Mikkel N. and {Antia}, H.~M. and
+         {Ball}, Warrick H. and {Basu}, Sarbani and
+         {Christensen-Dalsgaard}, J{\o}rgen and {Lebreton}, Yveline and
+         {Reese}, Daniel R. and {Verma}, Kuldeep and {Casagrande}, Luca and
+         {Justesen}, Anders B. and {Mosumgaard}, Jakob R. and
+         {Chaplin}, William J. and {Bedding}, Timothy R. and {Davies}, Guy R. and
+         {Handberg}, Rasmus and {Houdek}, G{\"u}nter and {Huber}, Daniel and
+         {Kjeldsen}, Hans and {Latham}, David W. and {White}, Timothy R. and
+         {Coelho}, Hugo R. and {Miglio}, Andrea and {Rendle}, Ben},
+        title = "{Standing on the Shoulders of Dwarfs: the Kepler Asteroseismic LEGACY Sample. II.Radii, Masses, and Ages}",
+      journal = {\apj},
+     keywords = {asteroseismology, stars: fundamental parameters, stars: oscillations, Astrophysics - Solar and Stellar Astrophysics},
+         year = 2017,
+        month = feb,
+       volume = {835},
+       number = {2},
+          eid = {173},
+        pages = {173},
+          doi = {10.3847/1538-4357/835/2/173},
+archivePrefix = {arXiv},
+       eprint = {1611.08776},
+ primaryClass = {astro-ph.SR},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2017ApJ...835..173S},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+@ARTICLE{aguirreborsenkoch2022,
+       author = {{Aguirre B{\o}rsen-Koch}, V. and {R{\o}rsted}, J.~L. and {Justesen}, A.~B. and {Stokholm}, A. and {Verma}, K. and {Winther}, M.~L. and {Knudstrup}, E. and {Nielsen}, K.~B. and {Sahlholdt}, C. and {Larsen}, J.~R. and {Cassisi}, S. and {Serenelli}, A.~M. and {Casagrande}, L. and {Christensen-Dalsgaard}, J. and {Davies}, G.~R. and {Ferguson}, J.~W. and {Lund}, M.~N. and {Weiss}, A. and {White}, T.~R.},
+        title = "{The BAyesian STellar algorithm (BASTA): a fitting tool for stellar studies, asteroseismology, exoplanets, and Galactic archaeology}",
+      journal = {\mnras},
+     keywords = {asteroseismology, methods: numerical, methods: statistical, stars: fundamental parameters, Astrophysics - Solar and Stellar Astrophysics, Astrophysics - Earth and Planetary Astrophysics, Astrophysics - Astrophysics of Galaxies},
+         year = 2022,
+        month = jan,
+       volume = {509},
+       number = {3},
+        pages = {4344-4364},
+          doi = {10.1093/mnras/stab2911},
+archivePrefix = {arXiv},
+       eprint = {2109.14622},
+ primaryClass = {astro-ph.SR},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2022MNRAS.509.4344A},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
 """
+if imfprior:
+    bib += """
+    @ARTICLE{salpeter1955,
+           author = {{Salpeter}, Edwin E.},
+            title = "{The Luminosity Function and Stellar Evolution.}",
+          journal = {\apj},
+             year = 1955,
+            month = jan,
+           volume = {121},
+            pages = {161},
+              doi = {10.1086/145971},
+           adsurl = {https://ui.adsabs.harvard.edu/abs/1955ApJ...121..161S},
+          adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+    }
+"""
+
 print('WARNING: DO NOT USE THIS TEXT FOR PAPERS ETC AS IT IS BASICALLY COPY-PASTE')
 print('PLEASE DOUBLE-CHECK IF THE TEXT MATCHES YOUR EXPECTATIONS')
 print('TO BE USED FOR EASILY COMMUNICATING A SET-UP PRE-PUBLICATION')
