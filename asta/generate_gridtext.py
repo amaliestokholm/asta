@@ -6,7 +6,7 @@ import numpy as np
 grid = "/home/ADF/stokhoal/BASTA/grids/Garstec_16CygA.hdf5"
 outdir = "./gridtext/"
 if not os.path.exists(outdir):
-    os.path.makedirs(outdir)
+    os.makedirs(outdir)
 filename = os.path.join(outdir, f"griddescription_{grid.split('/')[-1][:-5]}.txt")
 bibname = os.path.join(outdir, f"bib_{grid.split('/')[-1][:-5]}.bib")
 sobol = True
