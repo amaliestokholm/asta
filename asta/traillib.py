@@ -110,6 +110,7 @@ class Trail:
         *,
         inputtable: Inputtable | None = None,
         inputparams: dict[str, str] | None = None,
+        freqparams: dict[str, str | bool] | None = None,
         extraplotparams: Sequence[str] | None = None,
         fitparams: Sequence[str],
         filters: Sequence[str] | None = None,
@@ -125,6 +126,11 @@ class Trail:
             inputparams = {}
         inputparams = {**inputtable.inputparams, **inputparams}
 
+        if 'freqs' in fitparams:
+            assert freqparams is not None
+        if freqparams is None:
+            freqparams = {}
+
         if extraplotparams is None:
             extraplotparams = ()
 
@@ -137,6 +143,7 @@ class Trail:
         thecase.inputparams = inputparams
         thecase.plotparams = [*self.plotparams, *extraplotparams]
         thecase.fitparams = list(fitparams)
+        thecase.freqparams = freqparams
         thecase.filters = list(filters)
         self.cases.append(thecase)
 
@@ -267,6 +274,8 @@ class Trail:
                 bayweights=self.bayweights,
                 optionaloutputs=self.optionaloutputs,
                 outputfile=outputfile,
+                freqparams=thecase.freqparams,
+                freqplots=True if thecase.freqparams else False,
                 kielplots=not self.no_plots,
                 cornerplots=[] if self.no_plots else self.plotparams,
                 dustframe=inputtable.dustframe,
