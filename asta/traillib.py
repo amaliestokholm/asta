@@ -40,6 +40,7 @@ class Inputtable:
 
 class Case:
     casename: str
+    plotname: str
     inputtable: Inputtable
     inputparams: dict[str, str]
     plotparams: list[str]
@@ -108,6 +109,7 @@ class Trail:
         self,
         casename: str,
         *,
+        plotname: str | None = None,
         inputtable: Inputtable | None = None,
         inputparams: dict[str, str] | None = None,
         freqparams: dict[str, str | bool] | None = None,
@@ -137,8 +139,12 @@ class Trail:
         if filters is None:
             filters = ()
 
+        if plotname is None:
+            plotname = str(fitparams)
+
         thecase = Case()
         thecase.casename = casename
+        thecase.plotname = plotname
         thecase.inputtable = inputtable
         thecase.inputparams = inputparams
         thecase.plotparams = [*self.plotparams, *extraplotparams]
@@ -303,6 +309,59 @@ class Trail:
             )
 
 
+    def make_comparisonsplot(self, verbose=False):
+        casedirs = os.listdir(f'./mainresults/')
+        casedirs.sort()
+        casedirs = [os.path.join(f'./mainresults/', bd) for bd in casedirs]
+
+        labels = []
+        for thecase in self.cases:
+            # base = f"mainresults/case{thecase.casename}/case{thecase.casename}"
+            # print(thecase.casename, thecase.plotname)
+            labels.append(thecase.plotname)
+            # for cd in casedirs:
+            #     name = r""
+            #     c = cd.split('/')[-1][-2:]
+            #     fits = self.cases
+            #     print(list(self))
+            #     raise SystemExit
+            #     #thecase.fitparams = list(fitparams)
+
+        plotdir = f'./plots'
+        if not os.path.exists(plotdir):
+            os.makedirs(plotdir)
+
+        params = [
+            "massfin",
+            "radPhot",
+            "Teff",
+            "MeH",
+            "LPhot",
+            "age",
+        ]
+
+        from asta import comparisons as cplot
+
+        cplot.compare_different_runs(
+            self.inputtable.filename,
+            casedirs,
+            'overview',
+            params,
+            sourceid='starid',
+            style=None,
+            plotdir=plotdir,
+            labels=labels,
+            inpparamdict={
+                "Teff": "Teff",
+                "Teff_e": "Teff_err",
+                "MeH": "MeH",
+                "MeH_e": "MeH_err",
+                "LPhot": "LPhot",
+                "LPhot_e": "LPhot_err",
+            },
+        )
+
+
 def init_trail(
     *,
     optionaloutputs: bool,
@@ -432,3 +491,5 @@ def merge_results_together(
             a.write(o, format="ascii.commented_header", overwrite=True)
         else:
             raise Exception("unhandled extension: %r" % (o,))
+
+
