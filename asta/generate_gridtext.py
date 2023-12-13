@@ -3,7 +3,7 @@ import h5py
 import numpy as np
 
 # Settings (maybe parsing?)
-grid = "/home/ADF/stokhoal/BASTA/grids/Garstec_16CygA.hdf5"
+grid = "/home/ADF/stokhoal/BASTA/grids/Garstec_AS09_barbieMS.hdf5"
 outdir = "./gridtext/"
 if not os.path.exists(outdir):
     os.makedirs(outdir)
@@ -95,10 +95,11 @@ else:
 if {"dif", "ove"} <= set(a["header/pars_constant"]):
     text += "Diffusion and settling of helium and heavier elements were not included, neither was convective overshooting. "
 
-text = r"The primordial helium is assumed to be $0.248$ \citep{fields2020} and we use a fixed the Galactic chemical enrichment law of $\Delta Y/\Delta Z=1.4$ \citep{balser2006}. "
+#text += r"The primordial helium is assumed to be $0.248$ \citep{fields2020} and we use a fixed the Galactic chemical enrichment law of $\Delta Y/\Delta Z=1.4$ \citep{balser2006}. "
 
 # Atmosphere
-text += "We used an Eddington grey atmosphere. "
+#text += "We used an Eddington grey atmosphere. "
+text += r"Atomic diffusion of elements are treated following the prescription by \cite{thoul1994}."
 
 # Dimensions
 params = {
@@ -153,6 +154,8 @@ if imfprior:
 if universeageprior:  # This is directly from Borre et al. 2021
     text += r"Additionally, we include an upper limit on the stellar ages of 15 Gyr. This is done to avoid nonphysical solutions for stars older than the age of the Universe. Despite the solutions not being physical at above the age of the Universe (13.7 Gyr), they can still hold statistical significance and we do, therefore, not truncate the solutions at 13.7 Gyr but allow them to stretch to 15 Gyr. For the remaining parameters we use uniform priors. "
 
+print(paragraph)
+print(text)
 
 # Bibliography
 bib = ""
