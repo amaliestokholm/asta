@@ -4,7 +4,7 @@ from cycler import cycler
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from astropy.table import Table, unique
-
+from typing import Sequence
 
 
 # plt.style.use('/home/amalie/cassiopy/basta_standard.mplstyle')
@@ -83,24 +83,24 @@ def get_name(bastaoutdirs):
             name += "[Fe/H], "
         if "MeH" in i:
             name += "[M/H], "
-        if "dnufit" in i or 'DNU' in i:
+        if "dnufit" in i or "DNU" in i:
             name += r"$\Delta \nu_{\mathrm{fit}}$, "
         if "dnuSer" in i or "SER" in i:
             name += r"$\Delta \nu_{\mathrm{Ser}}$, "
         if "numax" in i or "NUM" in i:
             name += r"$\nu_{\mathrm{max}}$, "
-        if "LPhot" in i or 'LPHOT' in i:
+        if "LPhot" in i or "LPHOT" in i:
             name += r"$L$, "
         if "PHASE" in i:
             name += "phase, "
-        if "E01" in i or 'EPSDIFF' in i:
+        if "E01" in i or "EPSDIFF" in i:
             name += r"$\delta \epsilon_{01}$., "
-        if "R01" in i or 'RATIO' in i:
+        if "R01" in i or "RATIO" in i:
             name += r"ratios (01)., "
-        if "freqs" in i or 'FREQ' in i:
+        if "freqs" in i or "FREQ" in i:
             name += r"freqs., "
-            if 'CUBIC' in i:
-                name+='BG14cubic'
+            if "CUBIC" in i:
+                name += "BG14cubic"
             if "minus" in i:
                 name = name[:-2]
                 name += " - $(l, n) =$"
@@ -149,8 +149,9 @@ def compare_different_runs(
     style=None,
     prior=None,
     includeprior=True,
-    plotdir='.',
+    plotdir=".",
     inpparamdict=None,
+    labels: Sequence[str] | None = None,
 ):
     if style is None:
         prettifys = [True, False]
@@ -163,7 +164,8 @@ def compare_different_runs(
     colors, tableau10 = get_colors()
     inp = Table.read(inptable, format="ascii.commented_header")
 
-    labels = get_name(bastaoutdirs)
+    if labels is None:
+        labels = get_name(bastaoutdirs)
 
     stars = inp[sourceid]
     for i, starid in enumerate(stars):
@@ -196,7 +198,7 @@ def compare_different_runs(
                             inppar = inpparamdict[par]
                             if inppar in inp.columns:
                                 obs = inp[inppar][i]
-                                obs_err = inp[inpparamdict[par + '_e']][i]
+                                obs_err = inp[inpparamdict[par + "_e"]][i]
                     else:
                         inppar = paramsdict[par]
                         if inppar in inp.columns:
@@ -227,7 +229,8 @@ def compare_different_runs(
 
                             try:
                                 bastatable = Table.read(
-                                    asciifile, format="ascii.commented_header",
+                                    asciifile,
+                                    format="ascii.commented_header",
                                 )
                             except Exception:
                                 print("Could not find ascii table in")
@@ -243,7 +246,7 @@ def compare_different_runs(
                             except Exception:
                                 print("exception")
                                 if par == "alphaMLT":
-                                    x = bastatable['alpha'][star].value[0]
+                                    x = bastatable["alpha"][star].value[0]
                                 else:
                                     raise
                             if par == "age":
@@ -261,7 +264,7 @@ def compare_different_runs(
                                     par = "alphaMLT"
                                 else:
                                     raise
-                            xerr = np.asarray([merr, perr]).reshape((2,1))
+                            xerr = np.asarray([merr, perr]).reshape((2, 1))
                             if par == "age":
                                 xerr[0] /= 1e3
                                 xerr[1] /= 1e3
@@ -324,7 +327,7 @@ def plot_comparison_of_different_stars(asciifiles, idstrs, fname):
         overlap = np.in1d(tables[0]["starid"].data, tables[1]["starid"].data)
         nooverlap = np.where(~overlap)[0]
         print("Overlap", nooverlap)
-        for (table, ax, idstr) in zip(tables, [axs[0], axs[1]], idstrs):
+        for table, ax, idstr in zip(tables, [axs[0], axs[1]], idstrs):
             # Replace nan with something else
             mask = np.isnan(table["massfin"])
             table["massfin"][mask] = 0
@@ -506,7 +509,10 @@ def plot_comparison_of_different_bastaoutput(
                                 axs[i].tick_params(axis="both", labelsize="small")
                         axs[i].set_xlabel(prettypar[par], fontsize="small")
                         axs[i].set_xlim(
-                            [np.nanmin(xs) - 1.2 * np.nanmax(errs), np.nanmax(xs) + 1.2 * np.nanmax(errs)]
+                            [
+                                np.nanmin(xs) - 1.2 * np.nanmax(errs),
+                                np.nanmax(xs) + 1.2 * np.nanmax(errs),
+                            ]
                         )
                         plt.setp(
                             axs[i].get_xticklabels(),
@@ -604,7 +610,10 @@ def plot_comparison_of_different_bastaoutput(
                         # axs[i].tick_params(axis='both', labelsize='small')
                         axs[i].set_ylabel(prettypar[par], fontsize="small")
                         axs[i].set_ylim(
-                            [np.nanmin(xs) - 1.2 * np.nanmax(errs), np.nanmax(xs) + 1.2 * np.nanmax(errs)]
+                            [
+                                np.nanmin(xs) - 1.2 * np.nanmax(errs),
+                                np.nanmax(xs) + 1.2 * np.nanmax(errs),
+                            ]
                         )
                         plt.setp(
                             axs[i].get_xticklabels(),
