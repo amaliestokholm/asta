@@ -281,7 +281,7 @@ class Trail:
                 optionaloutputs=self.optionaloutputs,
                 outputfile=outputfile,
                 freqparams=thecase.freqparams,
-                freqplots=True if thecase.freqparams else False,
+                freqplots=["dupechelle", "echelle", "pairechelle"] if thecase.freqparams else False,
                 kielplots=not self.no_plots,
                 cornerplots=[] if self.no_plots else self.plotparams,
                 dustframe=inputtable.dustframe,

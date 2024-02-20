@@ -4,7 +4,6 @@ This repository contains helper functions for running [BASTA](https://github.com
 
 It can be useful (i) if you run BASTA for many stars at a time using BASTAmultirun or (ii) if you run many different fitting cases or other set-ups for a sample of stars.
 
-
 You can get this locally using pip
 ```
 pip install https://github.com/amaliestokholm/asta/archive/main.zip
@@ -13,11 +12,11 @@ You would also need numpy, astropy, and matplotlib.
 
 You would then have access to the newest version of `traillib.py`.
 In this script, you can find the commands for creating xml files easily using `init_trail`, `add_case` and `generate_xmls()`.
-Examples for how to do this for different types of projects using `traillib` can be found here:  https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc
-You can copy and edit one of these files to your usecase if you'd like.
 
-In the same directory, I have also put the `comparisons.py` script, which is the one I typically use to produce simple comparison plots across different BASTA runs.
-It is not perfect, but it can serve as inspiration for your own set-up.
+How to use the script is explained in the tutorial. 
+
+Examples for how to do this for different types of projects using `traillib` can also be found here:  https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc
+You can copy and edit one of these files to your usecase if you'd like.
 
 ## How to use it
 You set-up the `prep_xml.py` as you prefer (see https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc for inspiration).

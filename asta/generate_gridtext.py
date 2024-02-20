@@ -3,7 +3,7 @@ import h5py
 import numpy as np
 
 # Settings (maybe parsing?)
-grid = "/home/ADF/stokhoal/BASTA/grids/Garstec_AS09_barbieMS.hdf5"
+grid = "/home/ADF/stokhoal/BASTA/grids/Garstec_AS09_betahyi_updated.hdf5"
 outdir = "./gridtext/"
 if not os.path.exists(outdir):
     os.makedirs(outdir)
