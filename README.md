@@ -13,26 +13,17 @@ You would also need numpy, astropy, and matplotlib.
 You would then have access to the newest version of `traillib.py`.
 In this script, you can find the commands for creating xml files easily using `init_trail`, `add_case` and `generate_xmls()`.
 
-How to use the script is explained in the tutorial. 
 
 ## Quick guide: How to use it
-For a full guide, see tutorial.md
+For a full guide, see [tutorial.md](tutorial.md)
 
+You set-up the `prep_xml.py` as you prefer (see tutorial or https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc for inspiration).
 
-You set-up the `prep_xml.py` as you prefer (see https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc for inspiration).
-In your project directory you have a folder named e.g. `data` containing the input table and you make sure that the column names are mapped correctly in `prep_xml,py`
-
-Then you run
+Then run
 ```
 python3 prep_xml.py xml
 ```
-to generate the xmls. Depending on your value of `nparts` in `trail = traillib.init_trail`, it divides your sample into smaller chunks for easier parallelization. Don't worry - the script can merge your resultsfiles afterwards so you only have 1 file for each fitting case in the end.
-
-If you want to just do a test run with a few stars, I suggest you add the line
-```
-trail.quicktest_onlystars = 3
-```
-to your `prep_xml.py`.
+to generate the xmls.
 
 When you are ready to run your fits, you do the following from your project directory.
 ```
@@ -48,3 +39,18 @@ python3 prep_xml.py combine
 ```
 To combine your resultsfiles and get an overview of how many stars resulted in `nan` outputs.
 The stars with `nan` output will then be written to a new xml file, so if they were caused by e.g. server downtime, they can easily be fitted anew.
+
+For visual inspection, make plots using
+```
+python3 prep_xml.py plot
+```
+
+### Many stars? Divide your sample into smaller chunks!
+Depending on your value of `nparts` in `trail = traillib.init_trail`, it divides your sample into smaller chunks for easier parallelization. Don't worry - the script can merge your resultsfiles afterwards so you only have 1 file for each fitting case in the end.
+
+### Run a test with a few stars!
+If you want to just do a test run with a few stars, I suggest you add the line
+```
+trail.quicktest_onlystars = 3
+```
+to your `prep_xml.py`.
