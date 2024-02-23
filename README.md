@@ -15,10 +15,10 @@ In this script, you can find the commands for creating xml files easily using `i
 
 How to use the script is explained in the tutorial. 
 
-Examples for how to do this for different types of projects using `traillib` can also be found here:  https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc
-You can copy and edit one of these files to your usecase if you'd like.
+## Quick guide: How to use it
+For a full guide, see tutorial.md
 
-## How to use it
+
 You set-up the `prep_xml.py` as you prefer (see https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc for inspiration).
 In your project directory you have a folder named e.g. `data` containing the input table and you make sure that the column names are mapped correctly in `prep_xml,py`
 
