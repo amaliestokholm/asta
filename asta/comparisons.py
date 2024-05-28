@@ -152,6 +152,7 @@ def compare_different_runs(
     plotdir=".",
     inpparamdict=None,
     labels: Sequence[str] | None = None,
+    verbose: bool = True,
 ):
     if style is None:
         prettifys = [True, False]
@@ -166,6 +167,10 @@ def compare_different_runs(
 
     if labels is None:
         labels = get_name(bastaoutdirs)
+    
+    if verbose:
+        for bd, l in zip(bastaoutdirs, labels):
+            print(f"{bd.split('/')[-1]}: {l}")
 
     stars = inp[sourceid]
     for i, starid in enumerate(stars):
