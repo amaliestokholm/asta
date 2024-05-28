@@ -11,13 +11,12 @@ from astropy.table import Table, join, vstack
 
 def ignore_astropy_warnings() -> None:
     import warnings
-
     from astropy.utils.exceptions import AstropyWarning
 
     warnings.filterwarnings("ignore", category=AstropyWarning)
 
 
-Odea = tuple[float, float, float, float]
+Odea = tuple[float, float, float, float] | None
 
 
 class Grid:
@@ -71,7 +70,7 @@ class Trail:
         solarmodel: bool,
         solarnumax: float,
         solardnu: float,
-        odea: Odea,
+        odea: Odea=None,
     ) -> Grid:
         assert filenames
         filename = find_file(filenames)
