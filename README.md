@@ -17,7 +17,7 @@ In this script, you can find the commands for creating xml files easily using `i
 ## Quick guide: How to use it
 For a full guide, see [tutorial.md](tutorial.md)
 
-You set-up the `prep_xml.py` as you prefer (see tutorial or https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc for inspiration).
+You set-up the `prep_xml.py` as you prefer (see tutorial or https://cloud.phys.au.dk/nextcloud/index.php/s/gfq2RsbDnDy8a2E or https://cloud.phys.au.dk/nextcloud/index.php/s/Z7tTQFDE3m7e3Mc for inspiration).
 
 Then run
 ```
