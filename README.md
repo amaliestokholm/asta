@@ -50,7 +50,29 @@ Depending on your value of `nparts` in `trail = traillib.init_trail`, it divides
 
 ### Run a test with a few stars!
 If you want to just do a test run with a few stars, I suggest you add the line
-```
+```python3
 trail.quicktest_onlystars = 3
 ```
 to your `prep_xml.py`.
+
+### Use different reddening values
+Want to test the effect of including the E(B-V) from the dustmap?
+You can add your own column of E(B-V) values to your input `.ascii` file. This could be named 'EBV'.
+
+In your `prep_xml`.py, you need to not include `"EBV": "EBV",` in your `inputparams`, but instead when you set-up your cases, you can do as follows:
+```python3
+    trail.add_case(
+        "01",
+        fitparams=("Teff", "MeH", "parallax"),
+        extraplotparams=["distance"],
+        filters=["RP_GAIA"],
+        ignoreebv=True,
+        )
+    trail.add_case(
+        "02",
+        fitparams=("Teff", "MeH", "parallax",),
+        extraplotparams=["distance"],
+        filters=["RP_GAIA"],
+        ignoreebv=False,
+        )
+```
