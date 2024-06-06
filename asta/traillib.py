@@ -115,6 +115,7 @@ class Trail:
         extraplotparams: Sequence[str] | None = None,
         fitparams: Sequence[str],
         filters: Sequence[str] | None = None,
+        ignoreebv: bool = False,
     ) -> None:
         if not isinstance(casename, str) or not re.match(r"^[0-9][0-9]$", casename):
             raise Exception("Case name must be a string of two digits")
@@ -125,7 +126,11 @@ class Trail:
 
         if inputparams is None:
             inputparams = {}
+
         inputparams = {**inputtable.inputparams, **inputparams}
+
+        if ignoreebv:
+            inputparams["astadummy"] = "EBV"
 
         if 'freqs' in fitparams:
             assert freqparams is not None
